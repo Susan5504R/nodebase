@@ -1,8 +1,9 @@
-import { Button } from "@/components/ui/button";
+import { requireAuth } from "@/lib/auth-utils";
+
 const Page = async() => {
+  await requireAuth();
   return (
     <div>
-      <Button variant={"outline"}>Click Me </Button>
       Hello World
     </div>
   )
