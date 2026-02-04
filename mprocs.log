@@ -76,3 +76,5 @@ ERROR [portable_pty::win::psuedocon] CreateProcessW `"pwsh.exe -Command \"npm ru
 ERROR [portable_pty::win::psuedocon] CreateProcessW `"pwsh.exe -Command \"npm run dev\"\0"` in cwd `Some("C:\\Users\\mazar\\Desktop\\nodebase\0")` failed: The system cannot find the file specified. (os error 2)
 ERROR [lib::error] Error: channel closed
 ERROR [lib::error] Error: channel closed
+ERROR [lib::error] Error: channel closed
+ERROR [lib::error] Error: channel closed
