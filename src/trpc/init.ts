@@ -37,16 +37,23 @@ export const protectedProcedure = baseProcedure.use(async({ctx , next}) => {
   return next({ ctx : {...ctx, auth : session}});
 });
 
-export const premeiumProcedure = protectedProcedure.use(async({ctx , next}) => {
-  const customer = await polarClient.customers.getStateExternal({
-    externalId : ctx.auth.user.id,
-
-  });
-  if (!customer.activeSubscriptions || customer.activeSubscriptions.length === 0) {
+export const premiumProcedure = protectedProcedure.use(async({ctx , next}) => {
+  try {
+    const customer = await polarClient.customers.getStateExternal({
+      externalId : ctx.auth.user.id,
+    });
+    if (!customer.activeSubscriptions || customer.activeSubscriptions.length === 0) {
+      throw new TRPCError({
+        code : "FORBIDDEN",
+        message : "You need an active subscription to access this resource",
+      });
+    }
+    return next({ ctx : {...ctx,customer}});
+  } catch (error) {
+    // If customer not found in Polar or any other error, treat as no subscription
     throw new TRPCError({
       code : "FORBIDDEN",
       message : "You need an active subscription to access this resource",
     });
   }
-  return next({ ctx : {...ctx,customer}});
 });
