@@ -27,7 +27,7 @@ import { authClient } from "@/lib/auth-client";
 import { on } from "events";
 import { sl } from "date-fns/locale";
 import { use } from "react";
-import { useHasActiveSubscription } from "@/features/auth/components/subscriptions/hooks/use-subscription";
+import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
 const menuItems = [
     {   
