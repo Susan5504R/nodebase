@@ -245,14 +245,14 @@ export const EntityItem = ({
     return (
         <Link href={href} prefetch>
             <Card 
-            className={cn("shadow-none hover:shadow p-4 cursor-pointer" , isRemoving , "opacity-50 cursor-not-allowed" , className)} >
+            className={cn("shadow-none hover:shadow p-4 cursor-pointer" , isRemoving && "opacity-50 cursor-not-allowed" , className)} >
                 <CardContent 
                 className="flex flex-row items-center justify-between p-0" >
                     <div className="flex items-center gap-3">
                         {image}
                         <div>
                             <CardTitle className="text-base font-medium">{title}</CardTitle>
-                            {!!!subtitle && (
+                            {subtitle && (
                                 <CardDescription className="text-xs">
                                     {subtitle}
                                 </CardDescription>
