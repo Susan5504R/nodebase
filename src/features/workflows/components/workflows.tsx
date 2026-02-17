@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { on } from "events";
 import { useWorkflowsParams } from "../hooks/use-workflows-params";
 import { useEntitySearch } from "../hooks/use-entity-search";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import type { Workflow } from "@/generated/prisma/client";
 import { WorkflowIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
