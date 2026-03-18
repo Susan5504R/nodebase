@@ -2,13 +2,19 @@ import { NodeExecutor } from "@/features/executions/types";
 import { NonRetriableError } from "inngest";
 import { resumePluginState } from "next/dist/build/build-context";
 import ky ,  {type Options as KyOptions} from "ky";
-
+import Handlebars from "handlebars";
+import { resolve } from "path";
 const HTTP_REQUEST_TIMEOUT_MS = 30000;
 
+Handlebars.registerHelper("json", (context) => {
+    const stringified = JSON.stringify(context, null, 2);
+    const safeString = new Handlebars.SafeString(stringified);
+    return safeString;
+});
 type HttpRequestData = {
-    variableName?: string;
-    endpoint?: string;
-    method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+    variableName: string;
+    endpoint: string;
+    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     body?: string;
 
 };
@@ -26,8 +32,11 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
     if (!data.endpoint) {
         throw new NonRetriableError("Endpoint is required");
     }
+    if (!data.method) {
+        throw new NonRetriableError("Method is required");
+    }
     const result = await step.run("http-request", async()=>{
-        const endpoint = data.endpoint!;
+        const endpoint = Handlebars.compile(data.endpoint)(context);
         const method = data.method || "GET";
 
         const options : KyOptions = {
@@ -36,7 +45,9 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
             retry: 0,
         };
         if (["POST", "PUT", "PATCH"].includes(method)) {
-            options.body = data.body;
+            const resolved = Handlebars.compile(data.body || "{}")(context);
+            JSON.parse(resolved); // validate JSON
+            options.body = resolved;
             options.headers = {
                 "Content-Type": "application/json",
             };
@@ -62,16 +73,9 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
                 data : responseData,
             }
         }
-        if (data.variableName) {
-            return {
-                ...context,
-                [data.variableName]: responsePayload,
-            }
-        }
-        //fallback to default variable name if not provided
         return {
             ...context,
-            ...responsePayload,
+            [data.variableName]: responsePayload,
         }
     });
     return result;
