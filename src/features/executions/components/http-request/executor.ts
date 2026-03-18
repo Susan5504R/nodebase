@@ -6,6 +6,7 @@ import ky ,  {type Options as KyOptions} from "ky";
 const HTTP_REQUEST_TIMEOUT_MS = 30000;
 
 type HttpRequestData = {
+    variableName?: string;
     endpoint?: string;
     method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     body?: string;
@@ -17,12 +18,18 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
     context,
     step,
  }) => {
+
+    if (!data.variableName) {
+        throw new NonRetriableError("Variable name is required");
+    }
+
     if (!data.endpoint) {
         throw new NonRetriableError("Endpoint is required");
     }
     const result = await step.run("http-request", async()=>{
         const endpoint = data.endpoint!;
         const method = data.method || "GET";
+
         const options : KyOptions = {
             method,
             timeout: HTTP_REQUEST_TIMEOUT_MS,
@@ -30,6 +37,9 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
         };
         if (["POST", "PUT", "PATCH"].includes(method)) {
             options.body = data.body;
+            options.headers = {
+                "Content-Type": "application/json",
+            };
         }
         let response: Response;
 
@@ -45,13 +55,23 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
         
         const contentType = response.headers.get("content-type");
         const responseData = contentType?.includes("application/json") ? await response.json() : await response.text();
-        return {
-            ...context,
-            httpResonse : {
+        const responsePayload = {
+            httpResponse : {
                 status : response.status,
                 statusText : response.statusText,
                 data : responseData,
             }
+        }
+        if (data.variableName) {
+            return {
+                ...context,
+                [data.variableName]: responsePayload,
+            }
+        }
+        //fallback to default variable name if not provided
+        return {
+            ...context,
+            ...responsePayload,
         }
     });
     return result;
