@@ -4,13 +4,19 @@ import { manualTriggerExecutor } from "@/features/triggers/components/manual-tri
 import { httpRequestExecutor } from "../components/http-request/executor";
 import { googleFormTriggerExecutor } from "@/features/triggers/components/google-form-trigger/executor";
 import { stripeTriggerExecutor } from "@/features/triggers/components/stripe-trigger/executor";
+import { GeminiExecutor } from "../components/gemini/executor";
+import { OpenAIExecutor } from "../components/openai/executor";
+import { AnthropicExecutor } from "../components/anthropic/executor";
 
 export const executorRegistry : Record<NodeType , NodeExecutor> = {
     [NodeType.INITIAL] : manualTriggerExecutor,
     [NodeType.HTTP_REQUEST] : httpRequestExecutor,
     [NodeType.MANUAL_TRIGGER] : manualTriggerExecutor,
     [NodeType.GOOGLE_FORM_TRIGGER] : googleFormTriggerExecutor,
-    [NodeType.STRIPE_TRIGGER] : stripeTriggerExecutor, // Reusing the same executor for Stripe webhook trigger for demonstration purposes. You can create a separate executor if needed.
+    [NodeType.STRIPE_TRIGGER] : stripeTriggerExecutor, 
+    [NodeType.GEMINI] : GeminiExecutor,
+    [NodeType.OPENAI] : OpenAIExecutor,
+    [NodeType.ANTHROPIC] : AnthropicExecutor,
 };
 
 export const getExecutor = (type : NodeType) : NodeExecutor => {

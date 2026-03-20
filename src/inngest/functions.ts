@@ -1,4 +1,4 @@
-import { NonRetriableError } from "inngest";
+import { gemini, NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
 import { topologicalSort } from "./utils";
@@ -8,6 +8,7 @@ import { httpRequestChannel } from "./channel/http-request";
 import { manualTriggerChannel } from "./channel/manual-request";
 import { googleFormTriggerChannel } from "./channel/google-form-trigger";
 import { stripeTriggerChannel } from "./channel/stripe-trigger";
+import { geminiChannel } from "./channel/gemini";
 export const executeWorkflow = inngest.createFunction(
   { id: "execute-workflow" },
   { event : "workflows/execute.workflow" ,
@@ -15,6 +16,7 @@ export const executeWorkflow = inngest.createFunction(
       manualTriggerChannel(),
       googleFormTriggerChannel(),
       stripeTriggerChannel(),
+      geminiChannel(),
     ],
   },
   async ({event , step , publish}) => {
