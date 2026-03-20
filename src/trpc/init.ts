@@ -51,10 +51,16 @@ export const premiumProcedure = protectedProcedure.use(async({ctx , next}) => {
     }
     return next({ ctx : {...ctx,customer}});
   } catch (error) {
-    // If customer not found in Polar or any other error, treat as no subscription
+    // Re-throw TRPCErrors (like the FORBIDDEN above) as-is
+    if (error instanceof TRPCError) {
+      throw error;
+    }
+    // Log the actual Polar API error for debugging
+    console.error("Polar API error:", error);
+    // For genuine API errors (network, auth, etc.), return INTERNAL_SERVER_ERROR
     throw new TRPCError({
-      code : "FORBIDDEN",
-      message : "You need an active subscription to access this resource",
+      code : "INTERNAL_SERVER_ERROR",
+      message : "Failed to verify subscription status. Please try again later.",
     });
   }
 });

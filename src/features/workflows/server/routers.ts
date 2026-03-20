@@ -8,6 +8,7 @@ import { NodeType } from "@/generated/prisma/client";
 import { node } from "@sentry/core";
 import { id } from "date-fns/locale";
 import { inngest } from "@/inngest/client";
+import { sendWorkflowExecution } from "@/inngest/utils";
 export const workflowsRouter = createTRPCRouter({
     execute  : protectedProcedure
     .input(z.object({id : z.string()}))
@@ -24,6 +25,9 @@ export const workflowsRouter = createTRPCRouter({
             data : {
                 workflowId : workflow.id,
             },
+        });
+        await sendWorkflowExecution({
+            workflowId : input.id,
         });
         return workflow;
     }),
