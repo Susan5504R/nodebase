@@ -11,9 +11,9 @@ Handlebars.registerHelper("json", (context) => {
     return safeString;
 });
 type HttpRequestData = {
-    variableName: string;
-    endpoint: string;
-    method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+    variableName?: string;
+    endpoint?: string;
+    method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     body?: string;
 
 };
@@ -32,17 +32,18 @@ export const httpRequestExecutor : NodeExecutor<HttpRequestData> = async ({
     );
 
     try {
-        if (!data.variableName) {
-            throw new NonRetriableError("Variable name is required");
-        }
-
-        if (!data.endpoint) {
-            throw new NonRetriableError("Endpoint is required");
-        }
-        if (!data.method) {
-            throw new NonRetriableError("Method is required");
-        }
+        
         const result = await step.run("http-request", async()=>{
+            if (!data.variableName) {
+            throw new NonRetriableError("Variable name is required");
+            }
+
+            if (!data.endpoint) {
+                throw new NonRetriableError("Endpoint is required");
+            }
+            if (!data.method) {
+                throw new NonRetriableError("Method is required");
+            }
             const endpoint = Handlebars.compile(data.endpoint)(context);
             const method = data.method || "GET";
 
