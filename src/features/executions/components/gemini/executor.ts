@@ -26,6 +26,7 @@ export const GeminiExecutor : NodeExecutor<GeminiData> = async ({
     context,
     step,
     publish,
+    userId,
  }) => {
     await publish(
         geminiChannel().status({
@@ -69,6 +70,7 @@ export const GeminiExecutor : NodeExecutor<GeminiData> = async ({
         return prisma.credential.findUnique({
             where : {
                 id : data.credentialId,
+                userId,
             },
         });
     })
