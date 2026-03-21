@@ -2,11 +2,11 @@
 import { EmptyView, EntityHeader, EntityItem, EntityList, EntityPagination, ErrorView,LoadingView } from "@/components/entity-components";
 import { useCreateWorkflow, useRemoveWorkflow, useSuspenseWorkflows } from "../hooks/use-workflows";
 import { EntityContainer , EntitySearch } from "@/components/entity-components";
-import { useUpgradeModal } from "../hooks/use-upgrade-modal";
+import { useUpgradeModal } from "../../../hooks/use-upgrade-modal";
 import { toast } from "sonner";
 import { on } from "events";
 import { useWorkflowsParams } from "../hooks/use-workflows-params";
-import { useEntitySearch } from "../hooks/use-entity-search";
+import { useEntitySearch } from "../../../hooks/use-entity-search";
 import { useRouter } from "next/navigation";
 import type { Workflow } from "@/generated/prisma/client";
 import { WorkflowIcon } from "lucide-react";

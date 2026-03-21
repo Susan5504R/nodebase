@@ -21,6 +21,9 @@ export const useCreateWorkflow = () => {
             queryClient.invalidateQueries(
                 trpc.workflows.getMany.queryOptions({}),
             )
+        },
+        onError : (error) => {
+            toast.error("Failed to create workflow");
         }
     }));
 

@@ -18,6 +18,7 @@ const formSchema = z.object({
     model : z.string().min(1 , {message : "Model is required"}),
     systemPrompt : z.string().optional(),
     userPrompt : z.string().min(1 , {message : "User prompt is required"}),
+    credentialId : z.string().min(1 , {message : "Credential is required"})
 })
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -31,6 +32,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { use, useEffect } from "react";
 import { models } from "inngest";
+import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
+import { CredentialType } from "@/generated/prisma/enums";
 interface Props{
     open : boolean;
     onOpenChange : (open : boolean) => void;
@@ -47,14 +50,16 @@ export const OpenAIDialog = ({
     onSubmit,
     defaultvalues,
 } : Props) => {
+    const {data : credentials , isLoading : isLoadingCredentials} = useCredentialsByType(CredentialType.OPENAI);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver : zodResolver(formSchema),
         defaultValues : {
             variableName : defaultvalues?.variableName || "",
             model : defaultvalues?.model || AVAILABLE_MODELS[0],
-            systemPrompt : defaultvalues?.systemPrompt,
-            userPrompt : defaultvalues?.userPrompt,
-
+            systemPrompt : defaultvalues?.systemPrompt || "",
+            userPrompt : defaultvalues?.userPrompt || "",
+            credentialId : defaultvalues?.credentialId || "",
         }
     });
 
@@ -63,8 +68,9 @@ export const OpenAIDialog = ({
             form.reset({
                 variableName : defaultvalues?.variableName || "",
                 model : defaultvalues?.model || AVAILABLE_MODELS[0],
-                systemPrompt : defaultvalues?.systemPrompt,
-                userPrompt : defaultvalues?.userPrompt,
+                systemPrompt : defaultvalues?.systemPrompt || "",
+                userPrompt : defaultvalues?.userPrompt || "",
+                credentialId : defaultvalues?.credentialId || "",
             });
 
         }
@@ -111,6 +117,31 @@ export const OpenAIDialog = ({
                             </FormItem>
                         )}
                         />
+
+                        <FormField
+                            control={form.control}
+                            name="credentialId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>OpenAI Credential</FormLabel>
+                                    <FormControl>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingCredentials || credentials?.length === 0}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select credential" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {credentials?.map((credential) => (
+                                                    <SelectItem key={credential.id} value={credential.id}>
+                                                        {credential.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                            />
                             <FormField
                             control={form.control}
                             name="systemPrompt"

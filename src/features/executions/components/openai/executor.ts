@@ -4,6 +4,7 @@ import { openaiChannel } from "@/inngest/channel/openai";
 import {generateText} from "ai"
 import { createOpenAI } from "@ai-sdk/openai";
 import { NonRetriableError } from "inngest";
+import prisma from "@/lib/db";
 const OPENAI_TIMEOUT_MS = 30000;
 
 Handlebars.registerHelper("json", (context) => {
@@ -16,6 +17,7 @@ type OpenAIData = {
     model?: any;
     systemPrompt?: string;
     userPrompt?: string;
+    credentialId?: string;
 };
 export const OpenAIExecutor : NodeExecutor<OpenAIData> = async ({ 
     data,
@@ -49,13 +51,32 @@ export const OpenAIExecutor : NodeExecutor<OpenAIData> = async ({
         );
         throw new NonRetriableError("User prompt is required");
     }
+    if (!data.credentialId) {
+        await publish(
+            openaiChannel().status({
+                nodeId,
+                status : "error",
+            }),
+        );
+        throw new NonRetriableError("OpenAI credential is required");
+    }
     
    const systemPrompt = data.systemPrompt ? Handlebars.compile(data.systemPrompt)(context) : "You are a helpful assistant that helps with making API calls.";
    const userPrompt = Handlebars.compile(data.userPrompt)(context);
 
-   const credential = process.env.OPENAI_API_KEY!;
+    const credential = await step.run("get credential", ()=>{
+        return prisma.credential.findUnique({
+            where : {
+                id : data.credentialId,
+            },
+        });
+    })
+    if (!credential) {
+        throw new NonRetriableError("Credential not found");
+    }
+
    const openai = createOpenAI({
-        apiKey : credential,
+        apiKey : credential.value,
    });
 
    try {
