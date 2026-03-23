@@ -9,7 +9,7 @@ import { OpenAIExecutor } from "../components/openai/executor";
 import { AnthropicExecutor } from "../components/anthropic/executor";
 import { DiscordExecutor } from "../components/discord/executor";
 
-export const executorRegistry : Record<NodeType , NodeExecutor> = {
+export const executorRegistry : Partial<Record<NodeType , NodeExecutor>> = {
     [NodeType.INITIAL] : manualTriggerExecutor,
     [NodeType.HTTP_REQUEST] : httpRequestExecutor,
     [NodeType.MANUAL_TRIGGER] : manualTriggerExecutor,

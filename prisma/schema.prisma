@@ -46,6 +46,7 @@ enum CredentialType {
   OPENAI
   ANTHROPIC
   GEMINI
+  DISCORD
 }
 
 model Session {
@@ -105,6 +106,7 @@ model Workflow {
   connections Connection[]
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions Execution[]
 }
 
 enum NodeType {
@@ -155,3 +157,23 @@ model Connection {
 
   @@unique([fromNodeId, toNodeId, fromOutput, toInput])
 }
+
+enum ExecutionStatus {
+  SUCCESS
+  FAILED
+  RUNNING
+}
+
+model Execution {
+  id String @id @default(cuid())
+  output Json?
+  startedAt DateTime @default(now())
+  status ExecutionStatus @default(RUNNING)
+  error String? @db.Text
+  errorStack String? @db.Text
+  completedAt DateTime @updatedAt
+  workflowId String
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  inngestEventId String @unique
+} 
+

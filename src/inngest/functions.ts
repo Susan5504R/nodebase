@@ -2,7 +2,7 @@ import { gemini, NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/db";
 import { topologicalSort } from "./utils";
-import { NodeType } from "@/generated/prisma/browser";
+import { ExecutionStatus, NodeType } from "@/generated/prisma/browser";
 import { getExecutor } from "@/features/executions/lib/executor-registry";
 import { httpRequestChannel } from "./channel/http-request";
 import { manualTriggerChannel } from "./channel/manual-request";
@@ -11,7 +11,24 @@ import { stripeTriggerChannel } from "./channel/stripe-trigger";
 import { geminiChannel } from "./channel/gemini";
 import { discordChannel } from "./channel/discord";
 export const executeWorkflow = inngest.createFunction(
-  { id: "execute-workflow" },
+  { id: "execute-workflow" ,
+    retries : 0,
+    onFailure : async({event , step}) => {
+      await step.run("update-execution" , async()=>{
+        return prisma.execution.update({
+            where : {
+              inngestEventId : event.data.event.id,
+            },
+            data : {
+                status : ExecutionStatus.FAILED,
+                error : event.data.error.message,
+                errorStack : event.data.error.stack,
+                completedAt : new Date(),
+            },
+        });
+      })
+    }
+  },
   { event : "workflows/execute.workflow" ,
     channel : [httpRequestChannel(),
       manualTriggerChannel(),
@@ -23,9 +40,18 @@ export const executeWorkflow = inngest.createFunction(
   },
   async ({event , step , publish}) => {
     const workflowId = event.data.workflowId;
-    if (!workflowId) {
-        throw new NonRetriableError("Workflow ID is required");
+    const inngestEventId = event.id;
+    if (!workflowId || !inngestEventId) {
+        throw new NonRetriableError("Workflow ID or Inngest Event ID is required");
     }
+    await step.run("create-execution" , async()=>{
+        return prisma.execution.create({
+            data : {
+                workflowId,
+                inngestEventId,
+            },
+        });
+    })
     const sortedNodes = await step.run("prepare-workflow" , async()=>{
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where : {
@@ -64,6 +90,18 @@ export const executeWorkflow = inngest.createFunction(
         userId,
     })
       }
+    await step.run("update-execution" , async()=>{
+        return prisma.execution.update({
+            where : {
+                inngestEventId,
+            },
+            data : {
+                status : ExecutionStatus.SUCCESS,
+                output : context,
+                completedAt : new Date(),
+            },
+        });
+    })
     return {workflowId, result : context};
   },
 );
