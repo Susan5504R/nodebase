@@ -4,6 +4,7 @@ import { createTRPCRouter, protectedProcedure , premiumProcedure} from "@/trpc/i
 import { PAGINATION } from "@/config/constants";
 import type{Node , Edge} from "@xyflow/react";
 import { CredentialType, NodeType } from "@/generated/prisma/client";
+import { encrypt } from "@/lib/encryption";
 export const credentialsRouter = createTRPCRouter({
     create : premiumProcedure.input(
         z.object({
@@ -19,7 +20,7 @@ export const credentialsRouter = createTRPCRouter({
                 name ,
                 userId : ctx.auth.user.id,
                 type,
-                value,//todo encrypt value before saving to db (amazon secrets manager)
+                value : encrypt(value),//todo encrypt value before saving to db (amazon secrets manager)
             },
         });
     }),
@@ -69,7 +70,7 @@ export const credentialsRouter = createTRPCRouter({
             data : {
                 name : input.name,
                 type,
-                value,
+                value : encrypt(value),
             }
         });
 

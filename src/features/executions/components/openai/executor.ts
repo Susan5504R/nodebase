@@ -5,6 +5,7 @@ import {generateText} from "ai"
 import { createOpenAI } from "@ai-sdk/openai";
 import { NonRetriableError } from "inngest";
 import prisma from "@/lib/db";
+import { decrypt } from "@/lib/encryption";
 const OPENAI_TIMEOUT_MS = 30000;
 
 Handlebars.registerHelper("json", (context) => {
@@ -78,7 +79,7 @@ export const OpenAIExecutor : NodeExecutor<OpenAIData> = async ({
     }
 
    const openai = createOpenAI({
-        apiKey : credential.value,
+        apiKey : decrypt(credential.value),
    });
 
    try {

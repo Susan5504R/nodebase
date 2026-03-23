@@ -5,6 +5,7 @@ import {generateText} from "ai"
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { NonRetriableError } from "inngest";
 import prisma from "@/lib/db";
+import { decrypt } from "@/lib/encryption";
 const ANTHROPIC_TIMEOUT_MS = 30000;
 
 Handlebars.registerHelper("json", (context) => {
@@ -78,7 +79,7 @@ export const AnthropicExecutor : NodeExecutor<AnthropicData> = async ({
     }
 
    const anthropic = createAnthropic({
-        apiKey : credential.value,
+        apiKey : decrypt(credential.value),
    });
 
    try {

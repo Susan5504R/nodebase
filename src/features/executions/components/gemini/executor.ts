@@ -6,6 +6,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { NonRetriableError } from "inngest";
 import prisma from "@/lib/db";
 import { th } from "date-fns/locale";
+import { decrypt } from "@/lib/encryption";
 const GEMINI_TIMEOUT_MS = 30000;
 
 Handlebars.registerHelper("json", (context) => {
@@ -78,7 +79,8 @@ export const GeminiExecutor : NodeExecutor<GeminiData> = async ({
         throw new NonRetriableError("Credential not found");
     }
    const google = createGoogleGenerativeAI({
-        apiKey : credential.value,
+        apiKey : decrypt(credential.value),
+
    });
 
    try {
