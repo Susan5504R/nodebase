@@ -3,21 +3,15 @@ import { checkout, polar, portal } from "@polar-sh/better-auth";
 import { polarClient } from "./polar";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/db"
-const getBaseUrl = () => {
-  if (process.env.BETTER_AUTH_URL) {
-    return process.env.BETTER_AUTH_URL.startsWith('http') 
-      ? process.env.BETTER_AUTH_URL 
-      : `https://${process.env.BETTER_AUTH_URL}`;
-  }
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-};
+if (process.env.BETTER_AUTH_URL && !process.env.BETTER_AUTH_URL.startsWith("http")) {
+  process.env.BETTER_AUTH_URL = `https://${process.env.BETTER_AUTH_URL}`;
+} else if (!process.env.BETTER_AUTH_URL && process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+  process.env.BETTER_AUTH_URL = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+} else if (!process.env.BETTER_AUTH_URL && process.env.VERCEL_URL) {
+  process.env.BETTER_AUTH_URL = `https://${process.env.VERCEL_URL}`;
+}
 
 export const auth = betterAuth({
-  baseURL: getBaseUrl(),
   database: prismaAdapter(
     prisma, {
     provider: "postgresql",
