@@ -1,7 +1,8 @@
 "use client"
 
 import { ExecutionStatus } from "@/generated/prisma/enums"
-import { CheckCircle2Icon, ClockIcon, Link, Loader2Icon, XCircleIcon } from "lucide-react"
+import { CheckCircle2Icon, ClockIcon, Loader2Icon, XCircleIcon } from "lucide-react"
+import Link from "next/link"
 import { useSuspenseExecution } from "../hooks/use-executions"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +10,7 @@ import { formatDistanceToNow } from "date-fns"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 
-const getStatusIcon = (status : ExecutionStatus) => {
+const getStatusIcon = (status: ExecutionStatus) => {
     switch (status) {
         case ExecutionStatus.SUCCESS:
             return <CheckCircle2Icon className="size-5 text-green-600" />
@@ -22,14 +23,14 @@ const getStatusIcon = (status : ExecutionStatus) => {
     }
 }
 
-const formatStatus = (status : ExecutionStatus) => {
+const formatStatus = (status: ExecutionStatus) => {
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }
 
-export const ExecutionView = ({executionId} : {executionId : string}) => {
-    const {data : execution} = useSuspenseExecution(executionId);
-    const [showStackTrace , setShowStackTrace] = useState(false);
-    const duration = execution.completedAt? Math.round((new Date(execution.completedAt).getTime() - new Date(execution.startedAt).getTime()) / 1000) : null;
+export const ExecutionView = ({ executionId }: { executionId: string }) => {
+    const { data: execution } = useSuspenseExecution(executionId);
+    const [showStackTrace, setShowStackTrace] = useState(false);
+    const duration = execution.completedAt ? Math.round((new Date(execution.completedAt).getTime() - new Date(execution.startedAt).getTime()) / 1000) : null;
     return (
         <Card className="shadow-none">
             <CardHeader className="flex items-center gap-3">
@@ -44,13 +45,13 @@ export const ExecutionView = ({executionId} : {executionId : string}) => {
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                    <p className="text-sm font-medium text-muted-foreground ">
-                        Workflow
-                    </p>
-                    <Link
-                        className="text-sm hover:underline text-primary"
-                        href={`/workflows/${execution.workflowId}`}>{execution.workflow.name}
-                    </Link>
+                        <p className="text-sm font-medium text-muted-foreground ">
+                            Workflow
+                        </p>
+                        <Link
+                            className="text-sm hover:underline text-primary"
+                            href={`/workflows/${execution.workflowId}`}>{execution.workflow.name}
+                        </Link>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-muted-foreground ">
@@ -65,7 +66,7 @@ export const ExecutionView = ({executionId} : {executionId : string}) => {
                             Started
                         </p>
                         <p className="text-sm">
-                            {formatDistanceToNow(execution.startedAt, {addSuffix : true})}
+                            {formatDistanceToNow(execution.startedAt, { addSuffix: true })}
                         </p>
                     </div>
                     {execution.completedAt && (
@@ -74,11 +75,11 @@ export const ExecutionView = ({executionId} : {executionId : string}) => {
                                 Completed
                             </p>
                             <p className="text-sm">
-                                {formatDistanceToNow(execution.completedAt, {addSuffix : true})}
+                                {formatDistanceToNow(execution.completedAt, { addSuffix: true })}
                             </p>
                         </div>
                     )}
-                     {duration && (
+                    {duration && (
                         <div>
                             <p className="text-sm font-medium text-muted-foreground ">
                                 Duration
@@ -98,28 +99,28 @@ export const ExecutionView = ({executionId} : {executionId : string}) => {
                             </p>
                         </div>
                     )}
-                    </div>
-                    {execution.error && (
-                        <div className="mt-6 p-4 bg-red-50 rounded-md space-y-3">
-                            <div>
-                                <p className="text-sm font-medium text-red-900 mb-2">
-                                    Error
-                                </p>
-                                <p className="text-sm text-red-800 font-mono">
-                                    {execution.error}
-                                </p>
-                            </div>
-                            {execution.errorStack && (
-                               <Collapsible 
-                               open={showStackTrace}
-                               onOpenChange={setShowStackTrace}
-                               >
+                </div>
+                {execution.error && (
+                    <div className="mt-6 p-4 bg-red-50 rounded-md space-y-3">
+                        <div>
+                            <p className="text-sm font-medium text-red-900 mb-2">
+                                Error
+                            </p>
+                            <p className="text-sm text-red-800 font-mono">
+                                {execution.error}
+                            </p>
+                        </div>
+                        {execution.errorStack && (
+                            <Collapsible
+                                open={showStackTrace}
+                                onOpenChange={setShowStackTrace}
+                            >
                                 <CollapsibleTrigger
-                                asChild>
+                                    asChild>
                                     <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-red-900 hover:bg-red-100"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-red-900 hover:bg-red-100"
                                     >
                                         {showStackTrace ? "Hide Stack Trace" : "Show Stack Trace"}
                                     </Button>
@@ -129,22 +130,22 @@ export const ExecutionView = ({executionId} : {executionId : string}) => {
                                         {execution.errorStack}
                                     </pre>
                                 </CollapsibleContent>
-                               </Collapsible>
-                            )}
-                        </div>
-                    )}
-                    {execution.output && (
-                            <div className="mt-6 p-4 rounded-md space-y-3">
-                                <div>
-                                    <p className="text-sm font-medium mb-2">
-                                        Output
-                                    </p>
-                                    <pre className="text-sm font-mono overflow-auto mt-2 p-2 rounded">
-                                        {JSON.stringify(execution.output, null, 2)}
-                                    </pre>
-                                </div>
-                            </div>
+                            </Collapsible>
                         )}
+                    </div>
+                )}
+                {execution.output && (
+                    <div className="mt-6 p-4 rounded-md space-y-3">
+                        <div>
+                            <p className="text-sm font-medium mb-2">
+                                Output
+                            </p>
+                            <pre className="text-sm font-mono overflow-auto mt-2 p-2 rounded">
+                                {JSON.stringify(execution.output, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )
