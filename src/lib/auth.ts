@@ -21,6 +21,10 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+  trustedOrigins: process.env.VERCEL_URL ? [
+    `https://${process.env.VERCEL_URL}`,
+    ...(process.env.VERCEL_BRANCH_URL ? [`https://${process.env.VERCEL_BRANCH_URL}`] : [])
+  ] : [],
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
